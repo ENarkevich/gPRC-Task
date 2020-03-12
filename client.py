@@ -21,6 +21,6 @@ if __name__ == '__main__':
         decoded = cv2.imdecode(np.frombuffer(pict, dtype=np.uint8), flags=1)
         cv2.imwrite(f'{CLIENT_FOLDER}result.jpg', decoded)
     else:
-        print(responce.parts)
+        print(''.join(responce.parts))
 
 

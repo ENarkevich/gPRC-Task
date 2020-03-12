@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+message InputImage {
+    string path = 1;
+    int32 part_number = 2;
+}
+
+message ImageParts {
+    int32 ratio_x = 1;
+    int32 ratio_y = 2;
+    enum Parts {
+        int32 flag = 0
+        string message = 1
+    }
+}
+
+message ImageResult {
+    bytes result_image = 1;
+}
+
+service CroppImage {
+    rpc cropp(InputImage) returns (ImageParts) {}
+}
+
+service ConcatenateImage {
+    rpc concatenate(ImageParts) returns (ImageResult) {}
+}
+

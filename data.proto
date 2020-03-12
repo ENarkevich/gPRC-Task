@@ -8,14 +8,12 @@ message InputImage {
 message ImageParts {
     int32 ratio_x = 1;
     int32 ratio_y = 2;
-    enum Parts {
-        int32 flag = 0
-        string message = 1
-    }
+    bool flag = 3;
+    repeated string parts = 4;
 }
 
 message ImageResult {
-    bytes result_image = 1;
+    string result_image = 1;
 }
 
 service CroppImage {

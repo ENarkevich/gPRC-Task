@@ -1,6 +1,5 @@
 import grpc
 from concurrent import futures
-import time
 import cv2
 import numpy as np
 import base64
@@ -23,7 +22,7 @@ def crop_file(image, number_parts):
     if (height>width and ratio_x>ratio_y):  
         ratio_x, ratio_y = ratio_y, ratio_x
     # if number of parts is unreal
-    if(ratio_x>width or ratio_y>height):
+    if(ratio_x>width or ratio_y>height or ratio_x<1 or ratio_y<1):
         return None, None, None
     # shift for new points
     x_offset, y_offset = int(width/ratio_x), int(height/ratio_y)  
@@ -42,22 +41,25 @@ def crop_file(image, number_parts):
         if(i==ratio_y-1):
             y2 = height
         x1, x2 = 0, x_offset  
-    return parts, ratio_y, ratio_x
+    return parts, ratio_x, ratio_y
 
 class CroppImageServicer(data_pb2_grpc.CroppImageServicer):
     def cropp(self, request, context):
-        if (not(os.path.exists(f["path_file"]))):
-            context.set_details('cart_not_found')
-            return context
+        if (not(os.path.exists(request.path))):
+            return data_pb2.ImageParts(ratio_x=None, ratio_y=None, flag=False, parts='File not found.')
         image = cv2.imread(request.path)
-        # add if number of parts is unreal
         parts, ratio_x, ratio_y = crop_file(image, request.part_number)
-        """if (parts==None):
-            return """
-        responce_data = []
+        # if number of parts is unreal
+        if (parts==None):
+            return data_pb2.ImageParts(ratio_x=None, ratio_y=None, flag=False, parts='Impossible to cropp to this number of parts')
+        responce_data = data_pb2.ImageParts()
+        # encode data
         for i in range(request.part_number):
-            responce_data.append(base64.b64encode(cv2.imencode('.jpg', parts[i])[1]).decode())
-        return data_pb2.ImageParts(ratio_x=ratio_x, ratio_y=ratio_y, parts=bytes(12))
+            responce_data.parts.append(base64.b64encode(cv2.imencode('.jpg', parts[i])[1]).decode())
+        responce_data.ratio_x = ratio_x
+        responce_data.ratio_y = ratio_y
+        responce_data.flag = True
+        return responce_data
 
 class ConcatenateImageServicer(data_pb2_grpc.ConcatenateImageServicer):
     def concatenate(self, request, context):
@@ -84,8 +86,7 @@ class ConcatenateImageServicer(data_pb2_grpc.ConcatenateImageServicer):
         responce_data={}
         # encode data to bytes
         all_picture = base64.b64encode(cv2.imencode('.jpg', all_picture)[1]).decode() 
-        return data_pb2_grpc.ImageResult(result_image=all_picture)
-
+        return data_pb2.ImageResult(result_image=all_picture)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
@@ -95,9 +96,8 @@ def serve():
 
     server.add_insecure_port('[::]:5000')
     server.start()
-    server.wait_for_termination()
+    server.wait_for_termination(timeout=3600)
 
 if __name__ == '__main__':
     logging.basicConfig()
-    #logging.DEBUG
     serve()

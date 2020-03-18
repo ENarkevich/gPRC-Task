@@ -7,7 +7,8 @@ import base64
 from config import CLIENT_FOLDER
 
 if __name__ == '__main__':
-    channel = grpc.insecure_channel('localhost:5000')
+    #channel = grpc.insecure_channel('localhost:5000')
+    channel = grpc.insecure_channel('0.0.0.0:5000')
 
     stub1 = data_pb2_grpc.CroppImageStub(channel)
     stub2 = data_pb2_grpc.ConcatenateImageStub(channel)

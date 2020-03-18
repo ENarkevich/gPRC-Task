@@ -24,7 +24,7 @@ def serve():
     data_pb2_grpc.add_CroppImageServicer_to_server(CroppImageServicer(), server)
     data_pb2_grpc.add_ConcatenateImageServicer_to_server(ConcatenateImageServicer(), server)
 
-    server.add_insecure_port('[::]:5000')
+    server.add_insecure_port('0.0.0.0:5000')
     server.start()
     server.wait_for_termination(timeout=3600)
 

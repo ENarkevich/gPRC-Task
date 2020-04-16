@@ -11,12 +11,11 @@ if __name__ == "__main__":
     #request fot cropp
     request_data["part_number"] = parts_number
     request_data["path"] = f'{CLIENT_FOLDER}pict.jpg'
-    responce_parts = requests.post(SERV, json=request_data)  
+    responce_parts = requests.post(f'{SERV}cropp', json=request_data)  
     parts = responce_parts.json()
     if (responce_parts.status_code==200):
         # request for concatenate 
-        for_concatenate=parts
-        from_conc = requests.post(f'{SERV}concatenate', json=for_concatenate)
+        from_conc = requests.post(f'{SERV}concatenate', json=parts)
         # decode result from json 
         from_conc = from_conc.json()
         pict = base64.b64decode(from_conc["result_image"])

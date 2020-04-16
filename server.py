@@ -26,7 +26,12 @@ def serve():
 
     server.add_insecure_port('0.0.0.0:5000')
     server.start()
-    server.wait_for_termination(timeout=3600)
+    try:
+        while True:
+            server.wait_for_termination(timeout=3600)
+    except KeyboardInterrupt:
+        server.stop(0)
+
 
 if __name__ == '__main__':
     logging.basicConfig()
